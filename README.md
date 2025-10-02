@@ -102,3 +102,7 @@ nats sub --stream out-subj --new
 nats consumer delete out-subj dapr-durable
 ```
 
+```sh
+nats-server -c src/out-svc/nats-dev.conf
+```
+
