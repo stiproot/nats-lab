@@ -90,3 +90,7 @@ nats context select nats_development
 nats stream ls
 ```
 
+```sh
+nats stream add out-subj --storage file
+```
+

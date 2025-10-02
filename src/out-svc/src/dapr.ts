@@ -7,8 +7,8 @@ export function createDaprService(): DaprService {
     serverHost: config.dapr.serverHost,
     serverPort: config.dapr.serverPort,
     clientOptions: {
-      daprHost: config.dapr.serverHost,
-      daprPort: config.dapr.serverPort,
+      daprHost: config.dapr.daprHost,
+      daprPort: config.dapr.daprPort,
     },
   });
 
