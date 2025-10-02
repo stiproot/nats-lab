@@ -3,18 +3,22 @@ kind: Component
 metadata:
   name: out-pubsub
 spec:
-  type: pubsub.natsstreaming
+  type: pubsub.jetstream
   version: v1
   metadata:
     - name: natsURL
       value: nats://out-svc-nats:4222
-    - name: natsStreamingClusterID
-      value: stan-cluster
-    - name: subscriptionType
-      value: queue
-    - name: ackWaitTime
-      value: 300s
-    - name: maxInFlight
-      value: 25
-    - name: durableSubscriptionName
+    - name: streamName
+      value: out-stream
+    - name: durableName
       value: dapr-durable
+    - name: queueGroupName
+      value: out-queue
+    - name: startSequence
+      value: 1
+    - name: startTime
+      value: 0
+    - name: deliverAll
+      value: true
+    - name: flowControl
+      value: false

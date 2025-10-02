@@ -1,5 +1,18 @@
 # NATS
 
+NATS and JetStream:
+
+- NATS: A lightweight, high-performance messaging system (pub/sub, request/reply, streaming, etc.).
+- JetStream: An add-on to NATS that provides persistence and streaming features.
+    - In plain NATS, messages are ephemeral (if a subscriber is offline, it misses them).
+    - With JetStream, messages can be stored, replayed, acknowledged, and durable.
+
+Concepts:
+
+- Stream → A named collection of messages (backed by storage).
+- Consumer → A subscription with state (where you left off, what’s been acked).
+- Acknowledgments → Let JetStream know a message has been processed (so it won’t be redelivered unless needed).
+
 ## NATS Core
 
 Install:
