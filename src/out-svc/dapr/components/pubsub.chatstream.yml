@@ -1,0 +1,20 @@
+apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+  name: chatstream-pubsub
+spec:
+  type: pubsub.natsstreaming
+  version: v1
+  metadata:
+    - name: natsURL
+      value: nats://streaming-api-nats:4222
+    - name: natsStreamingClusterID
+      value: stan-cluster
+    - name: subscriptionType
+      value: queue
+    - name: ackWaitTime
+      value: 300s
+    - name: maxInFlight
+      value: 25
+    - name: durableSubscriptionName
+      value: dapr-durable

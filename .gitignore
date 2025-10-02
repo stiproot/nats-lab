@@ -1,1 +1,3 @@
 .cmd-output.md
+node_modules/
+.env

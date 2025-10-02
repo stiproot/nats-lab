@@ -61,3 +61,19 @@ nats reply "foo.*" --command "echo 'Responder 1: {message}'" --queue=greeter --s
 nats reply "foo.*" --command "echo 'Responder 2: {message}'" --queue=greeter --sleep=1s
 ```
 
+## NATS JetStream
+
+Nats JetStream is a built-in persistence and streaming engine for NATS.
+
+```sh
+nats server run --jetstream
+```
+
+```sh
+nats context select nats_development
+```
+
+```sh
+nats stream ls
+```
+

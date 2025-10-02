@@ -1,0 +1,72 @@
+services:
+  nats:
+    image: nats:latest
+    container_name: streaming-api-nats
+    ports:
+      - 4222:4222   # Client port
+      - 8222:8222   # HTTP management port
+    command: ["-js", "-m", "8222"]
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8222/healthz"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - streaming-network
+
+  streaming-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: streaming-api
+    ports:
+      - 3000:3000
+      - 3500:3500   # Dapr HTTP port
+      - 50001:50001 # Dapr gRPC port
+    environment:
+      - PORT=3000
+      - HOST=0.0.0.0
+      - DAPR_HOST=localhost
+      - DAPR_HTTP_PORT=3500
+      - PUBSUB_NAME=chatstream-pubsub
+      - TOPIC_NAME=chatstream-topic
+      - NATS_URL=nats://nats:4222
+    depends_on:
+      nats:
+        condition: service_healthy
+    networks:
+      - streaming-network
+
+  dapr-placement:
+    image: daprio/dapr:latest
+    container_name: dapr-placement
+    command: ["./placement", "-port", "50006"]
+    ports:
+      - 50006:50006
+    networks:
+      - streaming-network
+
+  streaming-api-dapr:
+    image: daprio/daprd:latest
+    container_name: streaming-api-dapr
+    command:
+      [
+        "./daprd",
+        "-app-id", "streaming-api",
+        "-app-port", "3000",
+        "-dapr-http-port", "3500",
+        "-dapr-grpc-port", "50001",
+        "-components-path", "/components",
+        "-placement-host-address", "dapr-placement:50006"
+      ]
+    volumes:
+      - ./dapr/components:/components
+    depends_on:
+      - streaming-api
+      - dapr-placement
+      - nats
+    network_mode: "service:streaming-api"
+
+networks:
+  streaming-network:
+    driver: bridge
