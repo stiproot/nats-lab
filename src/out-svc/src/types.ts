@@ -1,4 +1,5 @@
 import type { WebSocket } from "ws";
+import type { DaprClient } from "@dapr/dapr";
 
 export interface MessageHandler {
   (data: unknown): void;
@@ -21,4 +22,5 @@ export interface DaprService {
   start(): Promise<void>;
   stop(): Promise<void>;
   subscribe(handler: MessageHandler): void;
+  getClient(): DaprClient;
 }

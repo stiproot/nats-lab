@@ -5,3 +5,15 @@ services:
       command: ["./placement", "-port", "50006"]
       ports:
         - 50006:50006
+
+    dapr-scheduler:
+      image: daprio/dapr:latest
+      container_name: dapr-scheduler
+      command: ["./scheduler"]
+      ports:
+        - 50007:50007
+      volumes:
+        - dapr-scheduler-data:/data
+
+volumes:
+  dapr-scheduler-data:

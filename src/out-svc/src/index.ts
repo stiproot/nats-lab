@@ -8,6 +8,7 @@ async function main() {
   // Initialize Express app
   const app = express();
   app.use(express.json());
+  app.use(express.json({ type: 'application/cloudevents+json' }));
 
   // Create HTTP server
   const httpServer = createServer(app);
@@ -15,8 +16,8 @@ async function main() {
   // Initialize WebSocket service
   const wsService = createWebSocketService(httpServer);
 
-  // Initialize Dapr service
-  const daprService = createDaprService();
+  // Initialize Dapr service with Express app
+  const daprService = createDaprService(app);
 
   // Connect Dapr messages to WebSocket routing
   daprService.subscribe((data) => {

@@ -9,7 +9,7 @@ export const config = {
     daprHost: process.env.DAPR_HOST || "127.0.0.1",
     daprPort: process.env.DAPR_HTTP_PORT || "3500",
     pubSubName: process.env.PUBSUB_NAME || "out-pubsub",
-    topicName: process.env.TOPIC_NAME || "out-subj",
+    topicName: process.env.TOPIC_NAME || "out-subj.*",
   },
   nats: {
     url: process.env.NATS_URL || "nats://localhost:4222",

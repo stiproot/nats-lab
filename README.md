@@ -94,3 +94,11 @@ nats stream ls
 nats stream add out-subj --storage file
 ```
 
+```sh
+nats sub --stream out-subj --new
+```
+
+```sh
+nats consumer delete out-subj dapr-durable
+```
+

@@ -15,10 +15,6 @@ spec:
       value: dapr-durable
     - name: queueGroupName
       value: out-queue
-    - name: startSequence
-      value: 1
-    - name: startTime
-      value: 0
     - name: deliverAll
       value: true
     - name: flowControl
