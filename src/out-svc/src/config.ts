@@ -6,8 +6,8 @@ export const config = {
   dapr: {
     serverHost: process.env.DAPR_HOST || "127.0.0.1",
     serverPort: process.env.DAPR_HTTP_PORT || "3500",
-    pubSubName: process.env.PUBSUB_NAME || "chatstream-pubsub",
-    topicName: process.env.TOPIC_NAME || "chatstream-topic",
+    pubSubName: process.env.PUBSUB_NAME || "out-pubsub",
+    topicName: process.env.TOPIC_NAME || "out-subj",
   },
   nats: {
     url: process.env.NATS_URL || "nats://localhost:4222",

@@ -8,7 +8,7 @@ spec:
   initTimeout: 30s
   metadata:
     - name: natsURL
-      value: nats://streaming-api-nats:4222
+      value: nats://out-svc-nats:4222
     - name: natsStreamingClusterID
       value: stan-cluster
     - name: subscriptionType

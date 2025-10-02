@@ -41,7 +41,7 @@ NATS → Dapr Sidecar → Streaming API → WebSocket Clients
 
 ```bash
 # Clone the repository and navigate to the project
-cd streaming-api
+cd out-svc
 
 # Install dependencies
 npm install
@@ -57,8 +57,8 @@ Configuration is managed through environment variables:
 | `HOST` | `0.0.0.0` | Server bind address |
 | `DAPR_HOST` | `127.0.0.1` | Dapr sidecar host |
 | `DAPR_HTTP_PORT` | `3500` | Dapr HTTP port |
-| `PUBSUB_NAME` | `chatstream-pubsub` | Dapr pubsub component name |
-| `TOPIC_NAME` | `chatstream-topic` | NATS topic to subscribe to |
+| `PUBSUB_NAME` | `out-pubsub` | Dapr pubsub component name |
+| `TOPIC_NAME` | `out-subj` | NATS topic to subscribe to |
 | `NATS_URL` | `nats://localhost:4222` | NATS connection URL |
 
 ## Running the Service
@@ -96,7 +96,7 @@ docker-compose up -d nats
 
 ```sh
 dapr run \
-  --app-id streaming-api \
+  --app-id out-svc \
   --app-port 3000 \
   --dapr-http-port 3500 \
   --components-path ./components \
@@ -107,7 +107,7 @@ For local development, use the local component configuration:
 
 ```sh
 # Use the local components
-dapr run --app-id streaming-api --app-port 3000 --dapr-http-port 3500 --components-path ./dapr/components.local -- npm run dev
+dapr run --app-id out-svc --app-port 3000 --dapr-http-port 3500 --components-path ./dapr/components.local -- npm run dev
 ```
 
 ## Usage
@@ -159,13 +159,13 @@ ws.onclose = () => {
 **Using Dapr CLI:**
 
 ```sh
-dapr publish --publish-app-id streaming-api --pubsub chatstream-pubsub --topic chatstream-topic --data '{"message": "Hello, World!"}'
+dapr publish --publish-app-id out-svc --pubsub out-pubsub --topic out-subj --data '{"message": "Hello, World!"}'
 ```
 
 **Using curl (via Dapr API):**
 
 ```sh
-curl -X POST http://localhost:3500/v1.0/publish/chatstream-pubsub/chatstream-topic \
+curl -X POST http://localhost:3500/v1.0/publish/out-pubsub/out-subj \
   -H "Content-Type: application/json" \
   -d '{"message": "Hello from curl!"}'
 ```
@@ -175,7 +175,7 @@ curl -X POST http://localhost:3500/v1.0/publish/chatstream-pubsub/chatstream-top
 ### Project Structure
 
 ```txt
-streaming-api/
+out-svc/
 ├── src/
 │   ├── config.ts       # Configuration management
 │   ├── types.ts        # TypeScript interfaces
@@ -218,7 +218,7 @@ npm test
 npm run build
 
 # Build Docker image
-docker build -t streaming-api:latest .
+docker build -t out-svc:latest .
 ```
 
 ## Troubleshooting
@@ -231,7 +231,7 @@ docker build -t streaming-api:latest .
 
 1. Check if service is running: `curl http://localhost:3000/health`
 2. Verify port 3000 is not in use: `lsof -i :3000`
-3. Check Docker logs: `docker-compose logs streaming-api`
+3. Check Docker logs: `docker-compose logs out-svc`
 
 ### Dapr Connection Issues
 
@@ -239,7 +239,7 @@ docker build -t streaming-api:latest .
 
 **Solution:**
 
-1. Check Dapr logs: `docker-compose logs streaming-api-dapr`
+1. Check Dapr logs: `docker-compose logs out-svc-dapr`
 2. Verify NATS is healthy: `docker-compose ps nats`
 3. Check component configuration: `cat dapr/components/pubsub.yaml`
 4. Test Dapr directly: `dapr components -k`
@@ -253,7 +253,7 @@ docker build -t streaming-api:latest .
 1. Check NATS status: `docker-compose ps nats`
 2. View NATS logs: `docker-compose logs nats`
 3. Verify connection URL in component configuration
-4. Check network connectivity: `docker-compose exec streaming-api ping nats`
+4. Check network connectivity: `docker-compose exec out-svc ping nats`
 
 ### View Logs
 
@@ -262,12 +262,12 @@ docker build -t streaming-api:latest .
 docker-compose logs -f
 
 # Specific service
-docker-compose logs -f streaming-api
+docker-compose logs -f out-svc
 docker-compose logs -f nats
-docker-compose logs -f streaming-api-dapr
+docker-compose logs -f out-svc-dapr
 
 # Last 100 lines
-docker-compose logs --tail=100 streaming-api
+docker-compose logs --tail=100 out-svc
 ```
 
 ## Testing with websocat
@@ -319,9 +319,9 @@ Located in `dapr/components/pubsub.chatstream.yml`
 
 **Configuration:**
 
-- **Component Name**: `chatstream-pubsub`
+- **Component Name**: `out-pubsub`
 - **Type**: `pubsub.natsstreaming`
-- **Topic**: `chatstream-topic`
+- **Topic**: `out-subj`
 - **Subscription Type**: `queue`
 - **Durable Subscription**: `dapr-durable`
 

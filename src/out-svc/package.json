@@ -1,5 +1,5 @@
 {
-  "name": "streaming-api",
+  "name": "out-svc",
   "version": "1.0.0",
   "type": "module",
   "main": "index.js",

@@ -1,7 +1,7 @@
 services:
   nats:
     image: nats:latest
-    container_name: streaming-api-nats
+    container_name: out-svc-nats
     ports:
       - 4222:4222   # Client port
       - 8222:8222   # HTTP management port
@@ -14,11 +14,11 @@ services:
     networks:
       - streaming-network
 
-  streaming-api:
+  out-svc:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: streaming-api
+    container_name: out-svc
     ports:
       - 3000:3000
       - 3500:3500   # Dapr HTTP port
@@ -28,8 +28,8 @@ services:
       - HOST=0.0.0.0
       - DAPR_HOST=localhost
       - DAPR_HTTP_PORT=3500
-      - PUBSUB_NAME=chatstream-pubsub
-      - TOPIC_NAME=chatstream-topic
+      - PUBSUB_NAME=out-pubsub
+      - TOPIC_NAME=out-subj
       - NATS_URL=nats://nats:4222
     depends_on:
       nats:
@@ -46,13 +46,13 @@ services:
     networks:
       - streaming-network
 
-  streaming-api-dapr:
+  out-svc-dapr:
     image: daprio/daprd:latest
-    container_name: streaming-api-dapr
+    container_name: out-svc-dapr
     command:
       [
         "./daprd",
-        "-app-id", "streaming-api",
+        "-app-id", "out-svc",
         "-app-port", "3000",
         "-dapr-http-port", "3500",
         "-dapr-grpc-port", "50001",
@@ -62,10 +62,10 @@ services:
     volumes:
       - ./dapr/components:/components
     depends_on:
-      - streaming-api
+      - out-svc
       - dapr-placement
       - nats
-    network_mode: "service:streaming-api"
+    network_mode: "service:out-svc"
 
 networks:
   streaming-network:

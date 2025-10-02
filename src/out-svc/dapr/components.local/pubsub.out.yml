@@ -1,7 +1,7 @@
 apiVersion: dapr.io/v1alpha1
 kind: Component
 metadata:
-  name: chatstream-pubsub
+  name: out-pubsub
 spec:
   type: pubsub.natsstreaming
   version: v1
