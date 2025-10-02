@@ -1,5 +1,6 @@
 import { StateGraph, Annotation } from "@langchain/langgraph";
 import { DaprClient, ActorId } from "@dapr/dapr";
+import { ChatOpenAI } from "@langchain/openai";
 import type { ActorStateData } from "./types.js";
 
 // Define a simple actor interface
@@ -46,8 +47,11 @@ async function fetchActorState(
   }
 }
 
-// Node: Analyze the actor state and answer the question
-async function analyzeAndAnswer(state: typeof WorkflowState.State) {
+// Node: Analyze the actor state and answer the question using LLM
+async function analyzeAndAnswer(
+  state: typeof WorkflowState.State,
+  llm: ChatOpenAI
+) {
   console.log(`Analyzing state and answering question: ${state.question}`);
 
   if (state.error) {
@@ -64,40 +68,66 @@ async function analyzeAndAnswer(state: typeof WorkflowState.State) {
     };
   }
 
-  // Simple analysis: convert state to string and provide summary
-  const stateKeys = Object.keys(state.actorState);
-  const stateValues = Object.values(state.actorState);
+  // Prepare prompt for LLM
+  const prompt = `You are an AI assistant analyzing actor state data. The user has asked a question about an actor's state.
 
-  let answer = `Actor ${state.actorId} state analysis:\n`;
-  answer += `- Number of fields: ${stateKeys.length}\n`;
-  answer += `- Fields: ${stateKeys.join(", ")}\n`;
-  answer += `- State data: ${JSON.stringify(state.actorState, null, 2)}\n`;
+Actor ID: ${state.actorId}
+Actor State: ${JSON.stringify(state.actorState, null, 2)}
 
-  // Try to answer the specific question based on state
-  const questionLower = state.question.toLowerCase();
-  if (questionLower.includes("status") || questionLower.includes("state")) {
-    answer += `\nAnswer to "${state.question}": The current state contains ${stateKeys.length} properties.`;
-  } else if (questionLower.includes("value") || questionLower.includes("data")) {
-    answer += `\nAnswer to "${state.question}": ${JSON.stringify(state.actorState)}`;
-  } else {
-    answer += `\nAnswer to "${state.question}": State information provided above.`;
+User Question: ${state.question}
+
+Please analyze the actor state and provide a clear, concise answer to the user's question. Focus on the relevant information from the state data that helps answer the question.`;
+
+  try {
+    // Use LLM to analyze and answer
+    const response = await llm.invoke(prompt);
+    const answer = typeof response.content === 'string'
+      ? response.content
+      : JSON.stringify(response.content);
+
+    return {
+      answer,
+      reasoning: [
+        ...state.reasoning,
+        `Used LLM to analyze ${Object.keys(state.actorState).length} state properties`,
+        "Generated answer using AI analysis",
+      ],
+    };
+  } catch (error) {
+    console.error("LLM analysis failed:", error);
+    // Fallback to simple analysis
+    const stateKeys = Object.keys(state.actorState);
+    const fallbackAnswer = `Actor ${state.actorId} state has ${stateKeys.length} properties: ${stateKeys.join(", ")}. State data: ${JSON.stringify(state.actorState, null, 2)}`;
+
+    return {
+      answer: fallbackAnswer,
+      reasoning: [
+        ...state.reasoning,
+        "LLM analysis failed, used fallback method",
+      ],
+    };
   }
-
-  return {
-    answer,
-    reasoning: [
-      ...state.reasoning,
-      `Analyzed ${stateKeys.length} state properties`,
-      "Generated answer based on actor state",
-    ],
-  };
 }
 
 // Create the workflow graph
-export function createAgentWorkflow(daprClient: DaprClient, actorType: string) {
+export function createAgentWorkflow(
+  daprClient: DaprClient,
+  actorType: string,
+  llmConfig: { litellmUrl: string; anthropicApiKey: string }
+) {
+  // Create LLM instance configured for LiteLLM
+  const llm = new ChatOpenAI({
+    modelName: "claude-3-5-sonnet-20241022",
+    temperature: 0.7,
+    openAIApiKey: llmConfig.anthropicApiKey,
+    configuration: {
+      baseURL: llmConfig.litellmUrl,
+    },
+  });
+
   const workflow = new StateGraph(WorkflowState)
     .addNode("fetchState", (state) => fetchActorState(state, daprClient, actorType))
-    .addNode("analyze", analyzeAndAnswer)
+    .addNode("analyze", (state) => analyzeAndAnswer(state, llm))
     .addEdge("__start__", "fetchState")
     .addEdge("fetchState", "analyze")
     .addEdge("analyze", "__end__");

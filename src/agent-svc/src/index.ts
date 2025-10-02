@@ -37,7 +37,8 @@ async function main() {
         request,
         config.dapr.daprHost,
         config.dapr.daprPort,
-        config.dapr.actorType
+        config.dapr.actorType,
+        config.llm
       );
 
       res.json(result);

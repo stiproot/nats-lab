@@ -10,4 +10,8 @@ export const config = {
     daprPort: process.env.DAPR_HTTP_PORT || "3501",
     actorType: process.env.ACTOR_TYPE || "StateActor",
   },
+  llm: {
+    litellmUrl: process.env.LITELLM_URL || "http://localhost:4000",
+    anthropicApiKey: process.env.ANTHROPIC_API_KEY || "",
+  },
 } as const;

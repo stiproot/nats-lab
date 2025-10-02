@@ -9,6 +9,7 @@ export class DaprService extends Context.Tag("DaprService")<
   {
     readonly client: DaprClient;
     readonly actorType: string;
+    readonly llmConfig: { litellmUrl: string; anthropicApiKey: string };
   }
 >() {}
 
@@ -57,12 +58,18 @@ export const queryActorWithWorkflow = (
   });
 
 // Create the DaprService layer
-export const makeDaprServiceLayer = (daprHost: string, daprPort: string, actorType: string) =>
+export const makeDaprServiceLayer = (
+  daprHost: string,
+  daprPort: string,
+  actorType: string,
+  llmConfig: { litellmUrl: string; anthropicApiKey: string }
+) =>
   Layer.succeed(
     DaprService,
     DaprService.of({
       client: new DaprClient({ daprHost, daprPort }),
       actorType,
+      llmConfig,
     })
   );
 
@@ -71,7 +78,11 @@ export const makeWorkflowServiceLayer = Layer.effect(
   WorkflowService,
   Effect.gen(function* () {
     const daprService = yield* DaprService;
-    const workflow = createAgentWorkflow(daprService.client, daprService.actorType);
+    const workflow = createAgentWorkflow(
+      daprService.client,
+      daprService.actorType,
+      daprService.llmConfig
+    );
     console.log(`[Effect] WorkflowService initialized`);
     return { workflow };
   })
@@ -82,9 +93,10 @@ export const runQueryActorEffect = (
   request: AgentQueryRequest,
   daprHost: string,
   daprPort: string,
-  actorType: string
+  actorType: string,
+  llmConfig: { litellmUrl: string; anthropicApiKey: string }
 ): Promise<AgentQueryResponse> => {
-  const daprLayer = makeDaprServiceLayer(daprHost, daprPort, actorType);
+  const daprLayer = makeDaprServiceLayer(daprHost, daprPort, actorType, llmConfig);
   const workflowLayer = makeWorkflowServiceLayer;
 
   const program = queryActorWithWorkflow(request);
