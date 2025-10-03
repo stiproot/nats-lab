@@ -1,4 +1,23 @@
 services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: postgres
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRES_USER=dapr
+      - POSTGRES_PASSWORD=dapr
+      - POSTGRES_DB=dapr_state
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dapr"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - streaming-network
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
   nats:
     image: nats:latest
     container_name: out-svc-nats
@@ -67,6 +86,50 @@ services:
       - nats
     network_mode: "service:out-svc"
 
+  agent-svc:
+    build:
+      context: ./agent-svc
+      dockerfile: Dockerfile
+    container_name: agent-svc
+    ports:
+      - 3001:3001
+      - 3501:3501   # Dapr HTTP port
+      - 50002:50002 # Dapr gRPC port
+    environment:
+      - PORT=3001
+      - HOST=0.0.0.0
+      - DAPR_HOST=localhost
+      - DAPR_HTTP_PORT=3501
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - streaming-network
+
+  agent-svc-dapr:
+    image: daprio/daprd:latest
+    container_name: agent-svc-dapr
+    command:
+      [
+        "./daprd",
+        "-app-id", "agent-svc",
+        "-app-port", "3001",
+        "-dapr-http-port", "3501",
+        "-dapr-grpc-port", "50002",
+        "-components-path", "/components",
+        "-placement-host-address", "dapr-placement:50006"
+      ]
+    volumes:
+      - ./dapr/components:/components
+    depends_on:
+      - agent-svc
+      - dapr-placement
+      - postgres
+    network_mode: "service:agent-svc"
+
 networks:
   streaming-network:
     driver: bridge
+
+volumes:
+  postgres-data:
