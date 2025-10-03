@@ -35,15 +35,12 @@ export function createDaprService(app: Express): DaprService {
     console.log("Request content-type:", req.get("content-type"));
     console.log("Raw request body:", JSON.stringify(req.body, null, 2));
 
-    const data = req.body?.data || req.body;
-    console.log("Received message from NATS:", data);
-
     try {
-      // Extract actor ID from CloudEvent
-      const cloudEvent = data as CloudEvent;
+      // Extract CloudEvent from request body
+      const cloudEvent = req.body as CloudEvent;
 
       if (!cloudEvent.id) {
-        console.error("Message missing id field:", data);
+        console.error("Message missing id field:", req.body);
         res.status(400).json({
           success: false,
           error: "Missing id field in CloudEvent"
@@ -51,13 +48,16 @@ export function createDaprService(app: Express): DaprService {
         return;
       }
 
+      const data = cloudEvent.data;
+      console.log("Received message from NATS:", data);
+
       const actorId = cloudEvent.id;
       console.log(`Processing message for actor: ${actorId}`);
 
       // Use Dapr state store directly to persist actor state
       await daprClient.state.save("statestore", [
         {
-          key: `${config.dapr.actorType}||${actorId}`,
+          key: `${config.dapr.actorType}-${actorId}`,
           value: cloudEvent,
         },
       ]);

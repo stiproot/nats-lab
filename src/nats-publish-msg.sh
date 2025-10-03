@@ -11,7 +11,7 @@ nats pub out-subj.msgs '{
     }
   }'
 
-nats pub ctx-subj.msgs '{
+nats pub ctx-subj '{
     "specversion": "1.0",
     "type": "com.example.message",
     "source": "nats-cli",
