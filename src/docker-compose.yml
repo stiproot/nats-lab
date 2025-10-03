@@ -11,7 +11,7 @@ services:
 
   postgres:
     image: postgres:16-alpine
-    container_name: postgres
+    container_name: nats-lab-postgres
     ports:
       - 5432:5432
     environment:

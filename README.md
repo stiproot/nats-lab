@@ -106,3 +106,6 @@ nats consumer delete out-subj dapr-durable
 nats-server -c src/out-svc/nats-dev.conf
 ```
 
+```sh
+nats stream info ctx-subj
+```

@@ -8,14 +8,20 @@ spec:
   initTimeout: 30s
   metadata:
     - name: natsURL
-      value: nats://localhost:4222
+      value: nats://local:3M5a2fLRdv3OhyyKsv1alzUE7Z3RqC08@localhost:50773
     - name: streamName
-      value: ctx-stream
+      value: ctx-subj
+    - name: consumerID
+      value: "{appID}"
     - name: durableName
-      value: ctx-durable
+      value: dapr-durable
     - name: queueGroupName
       value: ctx-queue
-    - name: deliverAll
+    - name: deliverNew
       value: true
     - name: flowControl
       value: false
+    - name: ackWaitTime
+      value: 30s
+    - name: maxDeliver
+      value: 1
