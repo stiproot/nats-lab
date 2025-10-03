@@ -8,7 +8,7 @@ spec:
   initTimeout: 30s
   metadata:
     - name: natsURL
-      value: nats://out-svc-nats:4222
+      value: nats://nats-lab:4222
     - name: streamName
       value: out-stream
     - name: durableName

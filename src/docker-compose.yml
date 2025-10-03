@@ -20,7 +20,7 @@ services:
 
   nats:
     image: nats:latest
-    container_name: out-svc-nats
+    container_name: nats-lab
     ports:
       - 4222:4222   # Client port
       - 8222:8222   # HTTP management port
@@ -49,7 +49,7 @@ services:
       - DAPR_HTTP_PORT=3500
       - PUBSUB_NAME=out-pubsub
       - TOPIC_NAME=out-subj
-      - NATS_URL=nats://out-svc-nats:4222
+      - NATS_URL=nats://nats-lab:4222
     depends_on:
       nats:
         condition: service_healthy
@@ -126,6 +126,53 @@ services:
       - dapr-placement
       - postgres
     network_mode: "service:agent-svc"
+
+  data-svc:
+    build:
+      context: ./data-svc
+      dockerfile: Dockerfile
+    container_name: data-svc
+    ports:
+      - 3002:3002
+      - 3502:3502   # Dapr HTTP port
+      - 50003:50003 # Dapr gRPC port
+    environment:
+      - PORT=3002
+      - HOST=0.0.0.0
+      - DAPR_HOST=localhost
+      - DAPR_HTTP_PORT=3502
+      - PUBSUB_NAME=ctx-pubsub
+      - TOPIC_NAME=ctx-subj
+      - ACTOR_TYPE=DataActor
+    depends_on:
+      postgres:
+        condition: service_healthy
+      nats:
+        condition: service_healthy
+    networks:
+      - streaming-network
+
+  data-svc-dapr:
+    image: daprio/daprd:latest
+    container_name: data-svc-dapr
+    command:
+      [
+        "./daprd",
+        "-app-id", "data-svc",
+        "-app-port", "3002",
+        "-dapr-http-port", "3502",
+        "-dapr-grpc-port", "50003",
+        "-components-path", "/components",
+        "-placement-host-address", "dapr-placement:50006"
+      ]
+    volumes:
+      - ./dapr/components:/components
+    depends_on:
+      - data-svc
+      - dapr-placement
+      - postgres
+      - nats
+    network_mode: "service:data-svc"
 
 networks:
   streaming-network:

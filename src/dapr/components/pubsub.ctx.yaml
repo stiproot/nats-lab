@@ -1,19 +1,20 @@
 apiVersion: dapr.io/v1alpha1
 kind: Component
 metadata:
-  name: out-pubsub
+  name: ctx-pubsub
 spec:
   type: pubsub.jetstream
   version: v1
+  initTimeout: 30s
   metadata:
     - name: natsURL
       value: nats://nats-lab:4222
     - name: streamName
-      value: out-stream
+      value: ctx-stream
     - name: durableName
-      value: dapr-durable
+      value: ctx-durable
     - name: queueGroupName
-      value: out-queue
+      value: ctx-queue
     - name: startSequence
       value: 1
     - name: startTime
