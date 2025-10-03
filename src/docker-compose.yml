@@ -16,7 +16,7 @@ services:
 
   out-svc:
     build:
-      context: .
+      context: ./out-svc
       dockerfile: Dockerfile
     container_name: out-svc
     ports:
