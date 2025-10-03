@@ -1,13 +1,13 @@
 export const config = {
   server: {
-    port: parseInt(process.env.PORT || "3000", 10),
+    port: parseInt(process.env.PORT || "3003", 10),
     host: process.env.HOST || "0.0.0.0",
   },
   dapr: {
     serverHost: process.env.DAPR_HOST || "127.0.0.1",
-    serverPort: process.env.PORT || "3000",
+    serverPort: process.env.PORT || "3003",
     daprHost: process.env.DAPR_HOST || "127.0.0.1",
-    daprPort: process.env.DAPR_HTTP_PORT || "3500",
+    daprPort: process.env.DAPR_HTTP_PORT || "3503",
     pubSubName: process.env.PUBSUB_NAME || "out-pubsub",
     topicName: process.env.TOPIC_NAME || "out-subj.*",
   },

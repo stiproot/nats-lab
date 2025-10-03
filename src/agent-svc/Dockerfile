@@ -30,7 +30,7 @@ FROM node:24-alpine
   COPY --from=builder /app/dist ./dist
 
   # Expose ports
-  EXPOSE 3001
+  EXPOSE 3002
 
   # Run the application
   CMD ["node", "dist/index.js"]
