@@ -4,8 +4,8 @@ NATS and JetStream:
 
 - NATS: A lightweight, high-performance messaging system (pub/sub, request/reply, streaming, etc.).
 - JetStream: An add-on to NATS that provides persistence and streaming features.
-    - In plain NATS, messages are ephemeral (if a subscriber is offline, it misses them).
-    - With JetStream, messages can be stored, replayed, acknowledged, and durable.
+        - In plain NATS, messages are ephemeral (if a subscriber is offline, it misses them).
+        - With JetStream, messages can be stored, replayed, acknowledged, and durable.
 
 Concepts:
 
@@ -91,7 +91,7 @@ nats stream ls
 ```
 
 ```sh
-nats stream add out-subj --storage file
+nats stream add out-subj --storage file --subjects ai
 ```
 
 ```sh
@@ -108,4 +108,43 @@ nats-server -c src/out-svc/nats-dev.conf
 
 ```sh
 nats stream info ctx-subj
+```
+
+## Command
+
+`--command` allows you to attach an external shell command to a NATS message handler, meaning every time a message is received on a subject, your command is executed, and its output can optionally be sent back as a reply.
+
+```sh
+nats reply "foo.*" --command "echo 'Responder 1: {message}'"
+```
+
+“Listen for any message published to subjects matching foo.*.
+When one arrives, run the given shell command — substituting message data into placeholders like {message} — and reply with the command’s output.”
+
+Like a bridge between NATS and your shell environment.
+
+```sh
+nats reply "ai.qry.*" --command 'claude --prompt "{message}"' --queue=qry-responder --sleep=1s
+```
+
+```sh
+nats request ai.qry.claude "Hi, how are you?"
+```
+
+```sh
+nats sub "foo.*" --command 'result=$(echo "Processed {message}"); nats pub bar.results "$result"'
+```
+
+What’s happening here:
+
+- nats sub listens for messages on foo.*
+- When a message is received, it executes your shell command
+- That shell command runs nats pub to publish the computed output to another subject (bar.results)
+
+```sh
+nats stream add ai \
+        --storage file \
+        --subjects ai \
+        --retention limits \
+        --replicas 1
 ```
